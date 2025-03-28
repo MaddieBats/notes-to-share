@@ -116,7 +116,7 @@ Agilie organisation practices can provide a way of adapting to change and the ag
 
 There is a distinction between an applications functional requirements (what it should do) and nonfunctional requirements (security, maintainability etc).
 
-## Data Models and Query Languages
+## 2 Data Models and Query Languages
 
 We build a program by layering data models on top of one another, and we need to know about how it is represented in the lower level, such as the APIs built upon APIs. In general, "each layer hides the complexity of the layers below it by providing a clean data model". This chapter focusses on general-purpose data models for storing and querying data.
 
@@ -183,4 +183,64 @@ Most relational systems other than MySQL support XML which includes making modif
 
 SQL is a declarative query language, whilst IMS and CODASYL was imperative. Imperative languages tell a computer to perform operations in an order, stepping through the code line by line, whilst declarative query languages specify the pattern of the data you want without stating exactly how to achieve that, with the optimiser working it out. Declarative code hides the implementation details, which means that performance improvements do not require changes to the queries. SQL is more limited in functionality, which means there is more room for automatic operations. Declarative languages are also more able to be used for parallel execution because it does not require the order to be specified. 
 
-MapReduce querying was popularised by Google and is neither declarative nor fully imperatiev, where the logic of the query is expressed with snippets of code, and is based on the `map`/`collect` and `reduce`/`fold`/`inject` functions within functional programming languages. These are pure fucntions, only using the data that is passed to them as input, which means that they 
+MapReduce querying was popularised by Google and is neither declarative nor fully imperatiev, where the logic of the query is expressed with snippets of code, and is based on the `map`/`collect` and `reduce`/`fold`/`inject` functions within functional programming languages. These are pure fucntions, only using the data that is passed to them as input, which means that they cannot perform additional database queries. MapReduce is fairly low level, so you can run SQL on top of it. You do have to write two coordinated JavaScript functions when you use MapReduce and it would be useful to run a declarative query language, which is why MondoDB 2.2 added the aggregation pipeline, which is as expressive as SQL but uses JSON-based syntax, meaning that the NoSQL system ends up almost reinventing SQL.
+
+### Graph-Like Data Models
+
+If there are very comon many-to-many relationships in the data, then it is useful to map the data as a graph.
+
+A graph has *verticies* (or nodes / entities) and *edges* (or relationships / arcs). This means that you can map between verticies via edges. Note that you do not need to use homogeneous data, but can instead store many different types of objects in one store. 
+
+#### Property Graphs 
+
+One model of this is the *property graph*. 
+
+Here, each vertex has:
+* A unique identifier
+* A set of outgoing edges
+* A set of incoming edges
+* A collection of properties as key-value pairs
+
+Each edge has:
+* The vertext identifier
+* The vertex where the edge starts (tail)
+* The vertex where the edge ends (head)
+* A label to describe the relationsip
+* A collection of properties as key-value pairs
+
+The graph store has two relational tables, one for vertices and one for edges.
+
+Important aspects of the model:
+* Any vertex can have an edge connecting it with any other vertex
+* Given any vertex, you can find its incoming and outgoing edges and therefore traverse the graph
+* You can store multiple different kinds of relationships and kinds of information in a single graph
+
+The *Cypher* query language was developed for property graphs, which allows us to trace our way through the graph. 
+
+We can also, on the other hand, put graph data into a relational structure and query it with SQL, but as you don't know in advance what joins you need to make, this can be more challenging. In SQL this is called recusive common table expressions.
+
+### Triple-Store and SPARQL
+
+This is a similar model to the property graph model, where the data is stored in three-part statements: subject, predicate, object. The subject is equivalent to a vertex in a graph. The object is either a primitive datatype like a string or a number (the predicate being the key), or another vertex in the graph (the predicate being the edge, the subject the tail vertex and the object the head vertex). 
+
+there has been lots of writing about the semantic web, which is the idea that as websites publish information as text and pictures, they should also publish machine-readable information in the form of the Resource Description Framework, which would allow all of the web to be combined into a database of everything. This has not been realised. The RDF can be expressed in the Turtle language. 
+
+SPARQL is a query language for triple-stores using the RDF data model, and is similar in structure to Cypher. RDF doesn't distinguish between properties and edges, but instead uses predicates for both. 
+
+Graph databases are not like network models because:
+* In CODASYL there was a database schema which noted which record type could be nested in another
+* CODASYL required you to traverse to a particular record through the access pathes, but in graph databases you can refer to them directly
+* CODASYL hd childrens in an ordered set
+* CODASYL had imperative queries rather than declarative languages
+
+### Datalog
+
+Datalog was the original model, which was similar to the triple-store, but instead of (subject, predicate, object) it had predicate(subject, object). Datalog defines rules that tell the database about new predictes derived from the data, which can refer to other rules like functions. 
+
+### Summary
+
+Data models started as one big tree hierarchical models which moved to relational models. From there two NoSQL approaches have been tried, document databases and graph databases, neither of which enforce a schema. 
+
+## 3 Storage and Retrieval
+
+
