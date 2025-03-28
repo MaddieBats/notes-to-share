@@ -243,4 +243,5 @@ Data models started as one big tree hierarchical models which moved to relationa
 
 ## 3 Storage and Retrieval
 
-
+This is how we can store the data that we are given and then retrieve it when we need it. There is a distinction between optimising for transactional workloads and for analytics. 
+The two major storage engine types are log-structured and page-oriented storage engines.
