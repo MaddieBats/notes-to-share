@@ -244,4 +244,46 @@ Data models started as one big tree hierarchical models which moved to relationa
 ## 3 Storage and Retrieval
 
 This is how we can store the data that we are given and then retrieve it when we need it. There is a distinction between optimising for transactional workloads and for analytics. 
+
 The two major storage engine types are log-structured and page-oriented storage engines.
+
+The most basic databse is a simple key-value store where new values are appended to the database (which is like the log data file, where an application is simple an append-only sequence of records). The cost of a lookup in an append-only table is directly proportional to the size of the database. To reduce this we use indices, of which there are many types. By keeping additional metadata on the side we have a signpost to where the data is. Indices are additional structures derived from the primary data, and the more indices you use, the slower the write is (as that also has to be updated). Well chosen indexes speed up read queries but every index slows down writes. 
+
+The simplest possible strategy is to keep an in-memory hash map where every key is mapped to the byte offset in the data file, the location. This is very fast as long as all the keys fit in the RAM, so if you have a large number of writes per key this is fast. 
+
+Compaction is where you throw away duplicate keys in the log and only keep the most recent update for each key. This can be done in a background thread and use the old segment files while that is happening. There are some considerations for doing this:
+* File format. This is best done in a binary format that encodes the length of a string in bytes and is followed by the raw string
+* Deleting records. When you delete a key and its associates value you have to add a deletion record called a tombstone which tells the merging process to discard previous values for the deleted key
+* Crash recovery. When the database is restarted, the in-memory hash maps are lost, and whilst you cab restore the segment's hash map by reading the segment file, this can make server restarts expensive, so Bitcask stores a snapshot on disk
+* Partially written records. If there is a crash during the appending process, there needs to be checksums to make sure the corrupted parts are detected and ignored
+* Concurrency control. As the writes are appended in order, usually there is only one writer thread
+
+Append-only seems wasteful in that you could replace the old values directly, but appending / segment merging (being sequential writes) are a lot faster than random writes, and concurrency / crash recovery are simpler where the segment files are immutable, and merging the old segments means you don't have over-time fragmentation. However the limitations are that the hash table has to fit in memory and range queries are pretty inefficient (in that you have to look up each key in turn rather than run through the sequence directly).
+
+If we order our keys we have a Sorted String Table (SSTable). The requirement here is that each key only appears once in each merged segment file through compaction. When we merge these segments it is simple and efficient as you go through each input file, copy the lowest key and move to the next file, and as the segments were created sequentially, you can just take the value of the most recent segment. You also do not have to keep the index in memory as you can use other keys to find the target key - this means the in-memory index can be sparse. Read requests have to scan over several key-pairs anyway, so you can group those records in a block and compress them. The sorting is usually done by maintaining the sorted structure in memory using a tree structure like red-black trees / AVL trees. This makes the workflow as follows:
+* When the write comes in, add it to the in-memory balanced tree data structure (the memtable)
+* When the memtable gets bigger than a threshold write it out to an SSTable file on disk as the most recent segment
+* When you are serving a read request you try to find the key in the memtable and then the last segment, the segment before etc
+* In the background run merging and compaction to combine segments and discard overwritten / deleted values
+
+The problem with this comes in crashes where the most recent writes not written out to disk are lost, meaning that we need to keep a seperate log on disk, unsorted, which has every write appended. Examples of these algorithms are LevelDB and RocksDB. 
+
+This indexing structure was called Log-Structured Merge-Trees (LSM-Trees). 
+
+The performance optimisations for this come from the following places:
+* The use of Bloom filters which approximate the contents of a set to look up whether the key is somewhere in the database, to avoid searching everything for a nonexistent key
+* The use of size-tiered or leveled compaction which either merges newer / smaller tables into older / larger tables, or splitting up the key range into seperate levels, both of which use less disk space
+
+The most common indexing structure is called the B-tree. These date back to 1970 and are used in most relationnal databases. These keep key-value pairs sorted by key but have a different design philosophy. Instead os having variable-sized, megabyte or greater indexes, the B-trees break the database down into 4KB blocks / pages and read/write one page at a time. The page is identified using an address / location which allows the pages to refer to one another, stored on disk. This makes a tree of pages, with one page being the root of the B-tree which has its own child pages, each with a continuous range of keys. The page with the individual keys are called leaf trees and the number of references to child pages of a B-tree is its branching factor. When you update the value you go to the leaf page, change it and then split any pages into half-pages and update the parent pages. This is a balanced tree, where *n* keys has a depth of *O(log n)* depth. A four-level tree of 4KB pages with a branching factor of 500 can store 256TB. 
+
+A write operation of a B-tree is to overwrite the page on disk with the new data and to keep all of the references to that page. If there is a crash whilst you are splitting a page and trying to update the parent page, you have a corrupted index where there is an orphan page with no parent, so there is a write-ahead log append-only file that you have to write to before you can apply a modification, which means you can restore to that state. Careful concurrency control is required if you are accessing the database concurrently. which is done with latches.
+
+We can optimise B-trees by:
+* Instead of using a write-ahead log, using a copy-on-write scheme where the modified page is written to a different location and the new version of the parent page is created that points to it
+* NNot storing the entire tyree but abbreviating it, such as by just showing the boundaries between key ranges. This means you can have a larger branching factor and therefore fewer levels.
+* Positioning the pages on disk in such a way that the leaf pages are roughly sequential
+* Adding more pointers to the tree, such as references to the left and right sibling pages
+* Using variants such as fractal trees, which borrow some log-structured ideas
+
+LSM-trees are generally faster for writes and B-trees are faster for reads.
+
