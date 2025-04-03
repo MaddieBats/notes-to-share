@@ -87,3 +87,88 @@ This would give a response like:
 The `query` keyword at the start of the query tells the GraphQL server that we want to query the query root of the schema.
 
 The GraphQL server uses a type system or schema, usually in the GraphQL Schema Definition Language (SDL), which is itself language agnostic, and always describes the final schema.
+
+An example of this schema would be:
+
+```
+type Shop {
+  name: String!
+  # Where the shop is located, null if online
+  location: Location
+  products: [Product!]!
+}
+
+type Location {
+  address: String
+}
+
+type Product {
+  name: String!
+  price: Price!
+}
+```
+
+The most basic primitive of a GraphQL schema is the Object Type, which describes a concept in the API. They then define fields with the `fieldName: Type ` syntax, which gives us a return type to our fields. The fields can return object types of their own, such as `location: Location` in the above. 
+
+A query is able to dig into each of these object types as in:
+
+```graphql
+query {
+  # 1. The shop field returns a 'Shop' type
+  shop(id: 1) {
+    #2. Field location on the 'Shop' type
+    # Returns a 'Location' type.
+    location {
+      # 3. field address exists on the 'Location' type
+      # Returns a String
+      address
+    }
+  }
+}
+```
+
+There is always a Schema Root which defines the entry point into the querying, as in:
+
+```graphQL
+type Query {
+  shop(id: ID): Shop!
+}
+```
+
+This is then implicitly queried every time you request a GraphQL API.
+
+Note that there is a definition of a GraphQL argument which affects the runtime resolution of the field, as is defined as:
+
+```
+type Query {
+  shop(owner: String!, name: String!, location: Location): Shop!
+}
+```
+
+Arguments can define a type which can be Scalar or an Input (which are declared using the input keyword). 
+
+This might look like:
+
+```
+type Product {
+  price(format: PriceFormat): Int!
+}
+
+input PriceFormat {
+  displayCents: Boolean!
+  currency: String!
+}
+```
+
+GraphQL can also define variables to be used within a query, letting clients send variables along with th equery and have the GraphQL server eecute it, rather than being directly in the query string itself:
+
+```
+query FetchProduct($id: ID!, $format: PriceFormat!) {
+  product(id: $id) {
+    price(foromat: $format) {
+      name
+    }
+  }
+}
+```
+
