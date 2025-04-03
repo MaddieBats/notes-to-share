@@ -172,3 +172,77 @@ query FetchProduct($id: ID!, $format: PriceFormat!) {
 }
 ```
 
+Which we would then write a query for with something like:
+
+```GraphQL
+{
+  "id": "abc",
+  "format": {
+    "displayCents": true,
+    "currency": "USD"
+  }
+}
+```
+
+If the client may want to recieve the fields under a different name, they can use aliases, such as in the following where the client will get the field with `product` even if they query `abcproduct`:
+
+```
+query {
+  abcProduct: product(id: "abc") {
+    name
+    price
+  }
+}
+```
+
+With the query:
+
+```
+{
+  "data": {
+    "abcProduct": {
+      "name": "T-Shirt",
+      "price": 10,
+    }
+  }
+}
+```
+
+Mutations are used to allow users to write or modify data, which is defined using the Mutation root, which is done by including the mutation keyword at the top level of the query, as in:
+
+```
+mutation {
+  addProduct(name: String!, price: Price!) {
+    product {
+      id
+    }
+  }
+}
+```
+
+And in the query root this might be defined as:
+
+```
+type Mutation {
+  addProduct(name: String!, price: Price!): AddProductPayload
+}
+
+type AddProductPayload {
+  product: Product!
+}
+```
+
+Mutations are like query fields but differ in that:
+* Top-level fields in the mutation root are allowed to have side-effects and make modifications
+* Top-level mutatioon fields are executed serially rather than in parallel
+
+Otherwise, they still take arguments and have a return type for clients to query after the mutation was made.
+
+When a field needs to return a series of distinct values we can use Enum types, as in:
+
+
+```
+type Shop {
+  # The type of products the shop sells
+  type: ShopTyo
+```
