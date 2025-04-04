@@ -21,3 +21,15 @@ Types of standards used:
 ## 1. Surfing the Web
 
 Model of the web as a platforom for distributed computing and is broadly based on: a URL naming convention, the HTTP protocol, and the HTML document format. 
+
+Statelessness gets at the fact that a server doesn't care about what state the client is in.
+
+HTTP has eight methods that a client can apply to a resource, including GET, HEAD, POST, PUT, and DELETE, as well as the extension method PATCH,, which i used in web APIs. This is not like a progamming language where you can define a bunch of your own methods.
+
+Each state of a page, in REST terms, is referred to as an application state and each transition from one application to another corresponds to a link or form.
+
+The resource state is the overall state that the site is in and is the server-side state, compared with the application state, which is client side (although the server can manipulate this by sending representations like HTML documents. The resource state is server side but the client can manipulate it by sending the server a representation.
+
+Connectedmess is the propert of websites to explain how to get to adjoining pages. This can be described by the principle of "hypermedia as the engine of application state". 
+
+There were other protocols to the World Wide Web such as the Gopher protocol, but this was not addressable and neither was FTP
