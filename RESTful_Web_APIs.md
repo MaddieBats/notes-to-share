@@ -306,3 +306,10 @@ Within the HTML there is a series of possible requests that you can make as a cl
 * The `<img>` tag desribed a get request for a specific URL which happens automatically in the background
 * The `<form>` tag with `method="POST"` describes a POST request to a specific URL with a custom entity-body constructed by the client if the user triggers the control
 * The `<form>` tag with `method="GET"` describes a GET request to a custom URL constructed by the client if the user triggers the control
+
+There are some further hypermedia controls but they all fall under the Fielding definition that "Hypermedia is defined by the presence of application control information embedded within, or as a layer above, the presentation of information". 
+
+This application control information is what distinguishes an HTML document from a book, in that it allows for connections. 
+
+URLs created using the HTML tag are of a certain format, but they don't have to be. We use URI templates and RFC 6570 to explain how we can turn a string into a set of URLs, so `http://www.youtypeitwepostit.com/search/{search}` can be turned into a series of different URLs with `{search}` switched out. 
+
