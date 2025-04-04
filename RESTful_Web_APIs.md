@@ -187,4 +187,116 @@ There are also two extension HTTP methods:
 * LINK: Connect a resource to another one
 * UNLINK : Destroy the connection between two resources
 
-These above are the protocol semantics of HTTP 
+These above are the protocol semantics of HTTP. 
+
+GET is a safe HTTP method as it is just a request for information, and will not change the resource state other than incidental side effects. 
+
+DELETE asks the server to remove a resource, as in:
+
+```
+DELETE /api/45ty HTTP/1.1
+Host: ww.youtypeitwepostit.com
+```
+
+And you would get back a 204 if it has been deleted:
+
+```
+HTTP/1.1 204 No Content
+```
+
+You might also get 200 for "it's deleted" and 202 for "accepted, it is scheduled be deleted". If you then try to GET a DELETEd resource, you will get a 404 (not found) or 410 (gone). DELETE is not a safe method as it changes the resource, but it is idempotent, in that sending a request twice has the same effect on the resource state as sending it once. Every safe operation is also idempotent.
+
+POST has two jobs:
+* POST-to-append sends a POST request to crate a new resource underneath it, as in:
+
+```
+POST /api/ HTTP/1.1
+Content-Type: application/vnd.collection+json
+{
+  "template" : {
+    "data" : [
+      {"name" : "text", "value" : "testing"}
+    ]
+  }
+}
+```
+
+Which will hopefully give a 201 (created) response code, although you might get 202 (accepted). POST is neither safe not idempotent, in that it changes the resource and there is an effect from doing it more than once. 
+
+* Overload POST, which is about creating a new resource
+
+PUT requests a modification to the resource state. You take the representation from the GET request, modify it and send it back as the payload for the PUT request, as in:
+
+```
+PUT /api/q1w2e HTTP/1.1
+Content-Type: application/vnd.collection+json
+
+{
+  "template" : {
+    "data" : [
+      {"name" : "text", "value" : "tasting"}
+    ]
+  }
+}
+```
+
+The server is free to reject a PUT request if the entity-body doesn't make sense or for any other reason, and the response code is likely to be 200 (OK) or 204 (No Content). PUT is idempotent in that if you send the request multiple times there is no added effect. 
+
+A PUT request can also create a new resource if the client knows the URL where the resource should live, but is stil idempotent.
+
+PATCH is like PUT but it only works on a small "diff" representation of the total reprsentation. For example,
+
+```
+PATCH /my/data HTTP/1.1
+Host: example.org
+
+Content-Length: 326
+Content-Type: application/json-patch+json
+If-Match: "abc123"
+[
+  { "op": "test", "path": "/a/b/c", "value": "foo" },
+  { "op": "remove", "path": "/a/b/c" },
+  { "op": "add", "path": "/a/b/c", "value": [ "foo", "bar" ] },
+  { "op": "replace", "path": "/a/b/c", "value": 42 },
+  { "op": "move", "from": "/a/b/c", "path": "/a/b/d" },
+  { "op": "copy", "from": "/a/b/d", "path": "/a/b/e" }
+]
+```
+
+And you would get the same response codes as PATCH and DELETE. This is neither safe nor idempotent, as with POST. Note that this is a recent extension designed for web APIs. 
+
+LINK and UNLINK manage the hypermedia links between resources, as in:
+
+```
+UNLINK /story HTTP/1.1
+Host: www.example.com
+Link: <http://www.example.com/~omjennyg>;rel="author"
+```
+
+These are idempotent but not safe. 
+
+HEAD is a safe method that is a lightweight version of GET that only supplies the status code and the headers, saving bandwidth.
+
+OPTIONS is a discovery mechanism for HTTP which contains the HTTP `Allow` header laying out th eHTTP methods that a resource supports, as in:
+
+```
+OPTIONS /api/a1s2d3 HTTP/1.1
+Host: www.youtypeitwepostit.com
+
+200 OK
+Allow: GET PUT DELETE HEAD OPTIONS
+```
+
+POST can also convey any kind of change to a resource. This is often used in an HTML form because an HTML form can't trigget a PUT request. The data-handling process that it is providing a block of data for is so broad that it does not have any protocol semantics, and this is called overloaded POST. As these don't have protocol semantics, you have to provide reliable application semantics. 
+
+RESTful systems are made up of independent compoents that are created by a variety of users and communicated by passing documents back and forth over HTTP. HTTP protocol semantics are mostly defined by HTTP methods but there is redundancy in these (where, e.g. PUT can substitute for PATCH). 
+
+If you want an API entirely described by HTML documents then you need the protocol semantics to just use GET and POST.
+
+## 4. Hypermedia
+
+URLs identify resources and a client makes an HTTP request to those URLs. The server sends representations in response and the client builds picture of the resource state, with the client making a PUT/POST/PATCH request to send the repreentation back to the server to modify the resource state. The client knows what requests it can make and what the entity-body should look like by using hypermedia.
+
+Hypermedia connects resoures to each other and describes their capabilities in a machine-readable way. Hypermedia is strategy that i sthen implemented by different technologies, and have the goal of making the server tell the client what HTTP requests the client might want to make. 
+
+HTML is a hypermedia format, and `<a>` is a hypermeida control tag, which is a description of an HTTP request the browser might want to make in the future.
