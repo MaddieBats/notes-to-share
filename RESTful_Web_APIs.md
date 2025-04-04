@@ -142,3 +142,49 @@ HTTP POST is how a resource is created, and has the following specs from RFC 261
 * Providing a block of data to a data handling process
 * Extending a database through an append operation
 
+The POST request looks like the HTTP responses with a `Content-Type` header and an entity-body
+
+The safety constraint of HTTP GET meands that if you don't know what to do with a URL you can always GET it and look at the representation and nothing bad will happen. The use of JSON also means that you can find things such as types clearly.
+
+You should use the Collection+JSON instead of just JSON to make things more interoperable.
+
+This does not constrain the sorts of items that the collection should make up, and these are the application semantics that vary from one application to another.
+
+## 3. Resources and Representations
+
+REST is not a protocol, file format or development framework, but is instead a set of design constraints, called the Fielding constraints. 
+
+Underlying the three web technologies of the URL, HTTP and HTML, are resources and representations. 
+
+"A resource is anything that's important enough to be referenced as a thing in itself", i.e. anything you want to link to, asser about, retrieve or include. It is usually storable on a computer, and must have a URL. A client will only ever see the URLs and the representations.
+
+A representation describes a resource state. Issuing a GET request should lead to a document that captures the current state of the resource, depending on what the client asks for. A representation can be any machine readable document containing any information about a resource. 
+
+Resources are what get passed between clients and servers and a representational transfer is where the server sends a representation describing the state of a resource and the client sends a representation describing the state it would like the resource to have.
+
+The two strategies for specifying what representation the client wants are:
+* Content negotiation, where the client distinguishes between the representations based on the HTTP header
+* Giving the resource a URL for each representation possible
+
+When resources have multiple URLs, there should be a canonical URL. 
+
+The HTTP standard has eight kinds of messages and the four most common are:
+* GET : Get a representation of the resource
+* DELETE: Destroy the resource
+* POST: Create a new resource under this one
+* PUT: Replace the state of this resource with the one described
+
+And there are to methods commonly used for exploring an API:
+* HEAD : Get the headers that would be sent along with the representation, but not the representation itself
+* OPTIONS : Discover which HTTP methods the resource responds to.
+
+There are also CONNECT and TRACE but these are for HTTP proxies.
+
+There is also a ninth HTTP method in the supplement RFC 5789:
+* Patch : Modify a part of the state f the resource based on its representation, where if a bit of the resource state is not mentioned in the given representation it is left, kind of like PUT but more fine-grained
+
+There are also two extension HTTP methods:
+* LINK: Connect a resource to another one
+* UNLINK : Destroy the connection between two resources
+
+These above are the protocol semantics of HTTP 
