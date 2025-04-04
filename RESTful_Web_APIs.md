@@ -82,3 +82,63 @@ Content-Type: application/vnd.collection+json
 The most common versions of this are `text/html` and `image/jpeg` or similar, but we also get things like `vnd.collection+json`.
 
 JSON is described in RFC 4627 and is a standard for representing siple data structures in plain text, using double quotes for strings, square brackets for lists and curly brackets for objects. The above is not a simple JSON document, which would be `Content-Type: application.json` not `Content-Type: application/vnd.collection+json`.
+
+Collection+JSON is a standard for publishing a searchable list of resources on the web, and puts constraints on the JSON. These require the server to serve a JSON object, i.e. in `{}` rather than just any document. It also has to have a property called collection mapped to another object, which should have a property called items that maps to a list, which itself needs to be objects as in:
+
+```
+{"collection": {"items": [{}, {}, {}]}}
+```
+
+Collection+JSON is a way of serving lists that themselves describe HTTP resources. 
+
+The string is defined as "the address used to retrieve a representation of the document". Each object in the `items` list has an `href` property, and the value is a string with a URL. Collection+JSON allows you to talk about resources and URLs, which JSON in general does not.
+
+To use the API you need to use a `template` object to compose a valid `item` representation and then use HTTP POST to send that to the server for processing. 
+
+The `template` property is the `template object`, and looks like:
+
+```
+{
+  ...
+  "template": {
+    "data": [
+      {"prompt": "Text of message", "name": "text", "value":""}
+    ]
+  }
+}
+```
+
+Where we replace the empty string in `value` with the string to publish.
+
+The full template filled out with the HTTP POST request looks like:
+
+```
+POST /api/ HTTP/1.1
+Host: www.youtypeitwepostit.com
+Content-Type: application/vnd.collection+json
+{ "template":
+  {
+    "data": [
+      {"prompt": "Text of the message", "name": "text", "value": "Squid!"}
+    ]
+  }
+}
+```
+
+With this template being a valid Collection+JSON by itself.
+
+This would lead to a server response like:
+
+```
+HTTP/1.1 201 Created
+Location: http://www.youtypeitwepostit.com/api/47210977342911065
+```
+
+Where the 201 response code means that it is OK and that there is a new resource under the Location header.
+
+HTTP POST is how a resource is created, and has the following specs from RFC 2616:
+* Annotation of existing resources
+* Posting a message
+* Providing a block of data to a data handling process
+* Extending a database through an append operation
+
