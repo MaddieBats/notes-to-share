@@ -32,4 +32,53 @@ The resource state is the overall state that the site is in and is the server-si
 
 Connectedmess is the propert of websites to explain how to get to adjoining pages. This can be described by the principle of "hypermedia as the engine of application state". 
 
-There were other protocols to the World Wide Web such as the Gopher protocol, but this was not addressable and neither was FTP
+There were other protocols to the World Wide Web such as the Gopher protocol, but this was not addressable and neither was FTP. FTP also had long lived, indefinite sessions, unlike HTTP which is very time limited. Eventually, all of the different Internet protocols were folded into HTTP GET.
+
+Problems with most Web APIs
+* They usually have human-readable documentation that explains how to construct the URLs for a different resource, which violates the correctedness and self-descriptive messages by not using, e.g. tagged hypermedia instead
+* Websites have help docs but it is easier to click around instead, APIs tend to have a big menu of options rather than an interconnected web
+* Integrating with a new API requires custom software or installing one-off libraries rather than just being interoperabnle and when they have self-descriptive representations
+* When APIs change, the custom API clients break and have to be fixed but when a website undergoes a redesign, the site's users adapt, i.e. the website redesign is encapsulated in the self-descriptive HTML documents that are understandable from the previous ones.
+
+The problem with web API design is to bridge the semantic gap between understanding a document's structure and understanding what it means, the semantic challenge.
+
+## 2. A Simple API
+
+If you have a URL starting with http:// or https:// you should start with an HTTP GET request. We know the URL to a resource and nothing else, so we need to find the options.
+
+An example of this would be:
+
+```bash
+$ wget -S -O - http://www.youtypeitwepostit.com/api/
+```
+
+This uses the `Wget` command line tool with the `-S` option, which prints out the full HTTP response from the server, and the `-O` option, which prints the document rather than saving it, and in effect sends the following HTTP request:
+
+```HTTP
+GET /api. HTTP/1.1
+Host: www.youtypeitwepostit.com
+```
+
+This is a request for a representation from the server, and as it doesn't change the data, it is *safe*.
+
+The response we get to the GET request is in three sections:
+
+1. The status / response code, such as:
+
+```
+HTTP/1.1 200 OK
+```
+
+2. The entity-body / the body, which is a document in some format that you have to understand
+
+3. The response headers, a series of key-value pairs desribing the entity-body and the HTTP response in general, such as
+
+```
+ETag: "f60e0978bc9c458989815b18ddad6d75"
+Last-Modified: Thu, 10 Jan 2013 01:45:22 GMT
+Content-Type: application/vnd.collection+json
+```
+
+The most common versions of this are `text/html` and `image/jpeg` or similar, but we also get things like `vnd.collection+json`.
+
+JSON is described in RFC 4627 and is a standard for representing siple data structures in plain text, using double quotes for strings, square brackets for lists and curly brackets for objects. The above is not a simple JSON document, which would be `Content-Type: application.json` not `Content-Type: application/vnd.collection+json`.
