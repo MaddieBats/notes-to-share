@@ -300,3 +300,9 @@ URLs identify resources and a client makes an HTTP request to those URLs. The se
 Hypermedia connects resoures to each other and describes their capabilities in a machine-readable way. Hypermedia is strategy that i sthen implemented by different technologies, and have the goal of making the server tell the client what HTTP requests the client might want to make. 
 
 HTML is a hypermedia format, and `<a>` is a hypermeida control tag, which is a description of an HTTP request the browser might want to make in the future.
+
+Within the HTML there is a series of possible requests that you can make as a client, such as with the `<img>` tag:
+* The `<a>` tag describes a GET request for a specific URL if the user triggers the control
+* The `<img>` tag desribed a get request for a specific URL which happens automatically in the background
+* The `<form>` tag with `method="POST"` describes a POST request to a specific URL with a custom entity-body constructed by the client if the user triggers the control
+* The `<form>` tag with `method="GET"` describes a GET request to a custom URL constructed by the client if the user triggers the control
