@@ -339,3 +339,19 @@ This is roughly similar to an HTML `<a>` tag. We can use the LINK and UNLINK ext
 
 #### What Hypermedia Is For
 
+Hypermedia controls have three jobs:
+* Telling the client how to construct an HTTP request, which HTTP method to use, what URL to use, what HTTP headers and/or entity-body to send
+* To make promises about the HTTP response with the status code, HTTP headers and/or the data the server is likely to respond with
+* To suggest how the client should integrate responses in the workflow
+
+HTML GET forms and URI Templates both tell the client how to contruct a URL to be used in an HTTP GET request.
+
+An HTTP request has four parts:
+* A method
+* A target URL
+* The HTTP headers
+* The entity-body
+
+The `<a>` tag specifies the target URL and HTTP method to use, with the target URL in the `href` attribute, and the HTML specification of the tag becoming a GET request when the end user clicks a link. Notably, a URI template only specifies the target URI rather than anything about the HTTP request itself, it doesn't tell you whether to make a GET request or POST request etc. This means that you have to combine the URI Template with another hypermedia technology.
+
+Unlike the `<a>` tag, the `<img>` tag supplies a promise to the client that the server will also send some form of image representation in response to the GET. We can also use a simple XML hypermedia control from the Atom Publishing Protocol, as with `<link rel="edit" href="http://example.org/posts/1/"/>` and the `rel="edit"` means that the resource supports both PUT and DELETE as well as a GET.
