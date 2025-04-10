@@ -313,3 +313,8 @@ This application control information is what distinguishes an HTML document from
 
 URLs created using the HTML tag are of a certain format, but they don't have to be. We use URI templates and RFC 6570 to explain how we can turn a string into a set of URLs, so `http://www.youtypeitwepostit.com/search/{search}` can be turned into a series of different URLs with `{search}` switched out. 
 
+There is a direct translation of the URI templates into valid URLs. For instance if `hello := "Hello, World!"`, then the URI template `http://www.example.org/greeting?g={+hello}` will expand to the URL `http://www.example.org/greeting?g=Hello%20World!`.
+
+A URI Template is shorter and more flexible than an HTML GET form but the achieve a similar thing in allowing you to describe an infinite number of URLs with a short string. A URI Template has to be embedded in a hypermedia format, and it means that we do not need custom formats.
+
+A URL is a short string used to define a resource, like a URI, every URI is a URL and they are described in RFC 3986. However, URIs do not have to have a representation, so a URL is an identifier that can be dereferenced. For instance, whilst an `http:` URI or an `ftp:` URI can have protocols associated with them for obtaining a representation of a resource, something like `urn:isbn:9781449358063` is the URI for the abstract concept of the edition of this book, which obviously doesn't have a protocol.
