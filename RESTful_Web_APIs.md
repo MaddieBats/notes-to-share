@@ -318,3 +318,24 @@ There is a direct translation of the URI templates into valid URLs. For instance
 A URI Template is shorter and more flexible than an HTML GET form but the achieve a similar thing in allowing you to describe an infinite number of URLs with a short string. A URI Template has to be embedded in a hypermedia format, and it means that we do not need custom formats.
 
 A URL is a short string used to define a resource, like a URI, every URI is a URL and they are described in RFC 3986. However, URIs do not have to have a representation, so a URL is an identifier that can be dereferenced. For instance, whilst an `http:` URI or an `ftp:` URI can have protocols associated with them for obtaining a representation of a resource, something like `urn:isbn:9781449358063` is the URI for the abstract concept of the edition of this book, which obviously doesn't have a protocol.
+
+Without a representation there cannot be a representational state transfer, it can't be self-descriptive (as it can't send messages). Generally, when your API refers to a resource, it should use a URL with `http` or `https` and the URL should work by showing a useful representation in response to a GET request.
+
+#### The Link Header
+
+RFC 5988 defined the `Link` header extension to HTTP which lets you put hypermedia controls into entity-bodies such as JSON objects and binary image files. 
+
+For instance, if we had a story split into chapters, we could use the link in the header to point to the second chapter:
+
+```
+HTTP/1.1 200 OK
+Content-Type: text/plain
+Link: <http://www.example.com/story/part2>;rel="next"
+
+It was a dark and story night (continued in part 2).
+```
+
+This is roughly similar to an HTML `<a>` tag. We can use the LINK and UNLINK extension methods with the `Link` header.
+
+#### What Hypermedia Is For
+
