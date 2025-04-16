@@ -357,3 +357,16 @@ The `<a>` tag specifies the target URL and HTTP method to use, with the target U
 Unlike the `<a>` tag, the `<img>` tag supplies a promise to the client that the server will also send some form of image representation in response to the GET. We can also use a simple XML hypermedia control from the Atom Publishing Protocol, as with `<link rel="edit" href="http://example.org/posts/1/"/>` and the `rel="edit"` means that the resource supports both PUT and DELETE as well as a GET, and it means that the client doesn't need to speculate about the kind of representation, as it will be an AtomPub Memmber Entry. I.e.: If you make a GET request, you will get back an AtomPub Member Entry representation, knowing the `Content-Type` in advance.
 
 Hypermedia also describes the relationships between resources. In this HTML `<a>` tag: `<a href="http://www.example.com/">An outbound link</a>`, there is a hypermedia control that causes the client's application state to be replaced with a new state. This can be compared with an embedded link like `<img>` which augments the client's application state.
+
+HTML can also embed things like code, as with: `<script type="application/javascript" src="/my_javascript_application.js"/>` for javascript, `<link rel="stylesheet" type="text/css" href="/my_stylesheet.css"/>` for CSS, and:
+```
+<frameset>
+  <iframe src="/another-document.html" />
+</frameset>
+```
+for another full HTML document inside the first. 
+
+When you embed a document inside another you are doing transclusion. The browser is free to ignore the embedded scripts but gives hints to what JTTP requests are likely to be servable to the uer.
+
+API designers shouldn't design APIs that serve plain JSON, but should instead support real hypermedia
+
